@@ -1,145 +1,346 @@
+// "use client";
+
+// import { useRef, useState, useEffect } from "react";
+// import gsap from "gsap";
+
+// const Hero = () => {
+//   const mainVideoRef = useRef(null);
+//   const nextVideoRef = useRef(null);
+//   const miniWrapperRef = useRef(null);
+//   const miniInnerRef = useRef(null);
+//   const tlRef = useRef(null);
+
+//   const [currentIndex, setCurrentIndex] = useState(1);
+//   const [isAnimating, setIsAnimating] = useState(false);
+
+//   const totalVideos = 4;
+//   const nextVideoIndex = (currentIndex % totalVideos) + 1;
+
+//   const videoSrc = (index) => `/videos/hero-${index}.mp4`;
+
+//   // 🔥 Get EXACT visible mini-video polygon (accounts for scale)
+//   const getMiniClipPath = () => {
+//     const el = miniInnerRef.current;
+//     if (!el) return "polygon(0 0, 0 0, 0 0, 0 0)";
+
+//     const rect = el.getBoundingClientRect();
+//     const style = window.getComputedStyle(el);
+//     const matrix = new DOMMatrixReadOnly(style.transform);
+
+//     const scaleX = matrix.a || 1;
+//     const scaleY = matrix.d || 1;
+
+//     const width = rect.width * scaleX;
+//     const height = rect.height * scaleY;
+
+//     const centerX = rect.left + rect.width / 2;
+//     const centerY = rect.top + rect.height / 2;
+
+//     const left = ((centerX - width / 2) / window.innerWidth) * 100;
+//     const right = ((centerX + width / 2) / window.innerWidth) * 100;
+//     const top = ((centerY - height / 2) / window.innerHeight) * 100;
+//     const bottom = ((centerY + height / 2) / window.innerHeight) * 100;
+
+//     return `polygon(
+//       ${left}% ${top}%,
+//       ${right}% ${top}%,
+//       ${right}% ${bottom}%,
+//       ${left}% ${bottom}%
+//     )`;
+//   };
+
+//   const handleMiniVideoClick = () => {
+//     if (isAnimating) return;
+//     setIsAnimating(true);
+
+//     const startClip = getMiniClipPath();
+
+//     tlRef.current = gsap.timeline({
+//       defaults: { ease: "power3.inOut" },
+//       onComplete: () => {
+//         setCurrentIndex(nextVideoIndex);
+//         setIsAnimating(false);
+//       },
+//     });
+
+//     tlRef.current
+//       .set(nextVideoRef.current, {
+//         visibility: "visible",
+//         zIndex: 20,
+//         clipPath: startClip,
+//       })
+//       .to(nextVideoRef.current, {
+//         clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+//         duration: 1.2,
+//         ease: "power3.inOut",
+//       });
+//   };
+
+//   // Reset next video after transition
+//   useEffect(() => {
+//     if (!nextVideoRef.current) return;
+
+//     gsap.set(nextVideoRef.current, {
+//       visibility: "hidden",
+//       zIndex: 5,
+//       clipPath: "polygon(0 0, 0 0, 0 0, 0 0)",
+//     });
+//   }, [currentIndex]);
+
+//   return (
+//     <section className="relative h-screen w-screen overflow-hidden">
+//       {/* VIDEO STACK */}
+//       <div className="absolute inset-0 overflow-hidden">
+//         {/* MAIN VIDEO */}
+//         <video
+//           ref={mainVideoRef}
+//           src={videoSrc(currentIndex)}
+//           autoPlay
+//           muted
+//           loop
+//           playsInline
+//           preload="auto"
+//           className="absolute inset-0 z-10 h-full w-full object-cover"
+//         />
+
+//         {/* NEXT VIDEO (ANIMATED) */}
+//         <video
+//           ref={nextVideoRef}
+//           src={videoSrc(nextVideoIndex)}
+//           autoPlay
+//           muted
+//           loop
+//           playsInline
+//           preload="auto"
+//           className="absolute inset-0 h-full w-full object-cover"
+//         />
+//       </div>
+
+//       {/* MINI PREVIEW (HOVER SCALE PRESERVED) */}
+//       <div
+//         ref={miniWrapperRef}
+//         onClick={handleMiniVideoClick}
+//         className="absolute top-[55%] left-1/2 z-50 size-64 -translate-x-1/2 -translate-y-1/2 cursor-pointer overflow-hidden rounded-2xl max-md:size-52"
+//       >
+//         <div
+//           ref={miniInnerRef}
+//           className="origin-center scale-50 opacity-0 transition-all duration-250 ease-in hover:scale-100 hover:opacity-100"
+//         >
+//           <video
+//             src={videoSrc(nextVideoIndex)}
+//             autoPlay
+//             muted
+//             loop
+//             playsInline
+//             preload="auto"
+//             className="size-full object-cover object-center"
+//           />
+//         </div>
+//       </div>
+
+//       {/* TOP CONTENT */}
+//       <div className="absolute left-0 top-4 z-30 px-5 text-white md:px-10">
+//         <h1 className="mt-2 text-5xl font-black uppercase font-heading md:text-[5vw]">
+//           Velocity
+//         </h1>
+//         <p className="max-w-[25ch] text-xl font-medium md:text-2xl font-body lg:text-3xl">
+//           Experience the thrill of engineering and speed
+//         </p>
+//       </div>
+
+//       {/* BOTTOM CONTENT */}
+//       <div className="absolute bottom-5 right-0 z-30 text-white font-heading px-8 md:px-10">
+//         <h1 className="text-5xl font-black uppercase md:text-[5vw] max-md:text-4xl">
+//           Precision
+//         </h1>
+//       </div>
+//     </section>
+//   );
+// };
+
+// export default Hero;
 "use client";
-import { useRef } from "react";
+
+import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import HeroFace from "../ui/HeroFace";
-import FloatingElements from "../ui/FloatingElements";
-import ScrollTrigger from "gsap/ScrollTrigger";
 
-export default function Hero() {
-  gsap.registerPlugin(ScrollTrigger);
-  const container = useRef(null);
-  const aboutRef = useRef(null); // <-- New ref for About
+const Hero = () => {
+  const mainVideoRef = useRef(null);
+  const nextVideoRef = useRef(null);
+  const miniWrapperRef = useRef(null);
+  const miniInnerRef = useRef(null);
+  const tlRef = useRef(null);
 
-  // Hero animations (unchanged)
-  useGSAP(
-    () => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-      gsap.set(".slam-text, .face-wrapper, .floating-wrapper, .cta-badge", {
-        opacity: 0,
-      });
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-      tl.fromTo(
-        ".slam-text",
-        { scale: 8, opacity: 0, filter: "blur(20px)" },
-        {
-          scale: 1,
-          opacity: 0.4,
-          filter: "blur(0px)",
-          duration: 1.2,
-          ease: "back.out(1.2)",
-        }
-      )
-        .fromTo(
-          ".face-wrapper",
-          { scale: 0, opacity: 0, rotation: -10 },
-          { scale: 1, opacity: 1, rotation: 0, duration: 1 },
-          "-=0.8"
-        )
-        .fromTo(
-          ".floating-wrapper",
-          { y: 100, opacity: 0 },
-          { y: 0, opacity: 1, duration: 1.5, stagger: 0.2 },
-          "-=0.5"
-        )
-        .fromTo(
-          ".cta-badge",
-          { x: 100, opacity: 0, rotation: 45 },
-          {
-            x: 0,
-            opacity: 1,
-            rotation: 3,
-            duration: 0.8,
-            ease: "elastic.out(1, 0.5)",
-          },
-          "-=1"
-        );
-    },
-    { scope: container }
-  );
+  const totalVideos = 4;
+  const nextVideoIndex = (currentIndex % totalVideos) + 1;
 
-  // Scroll animations
-  useGSAP(() => {
-    // Hero container scroll animation
-    gsap.to(container.current, {
-      scrollTrigger: {
-        trigger: container.current,
-        start: "top top",
-        end: () =>
-          "+=" + (window.innerHeight + aboutRef.current.offsetHeight * 0.2),
-        scrub: 1,
-        pin: true,
+  const videoSrc = (index) => `/videos/hero-${index}.mp4`;
+
+  const getMiniClipPath = () => {
+    const el = miniInnerRef.current;
+    if (!el) return "polygon(0 0, 0 0, 0 0, 0 0)";
+
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    const matrix = new DOMMatrixReadOnly(style.transform);
+
+    const scaleX = matrix.a || 1;
+    const scaleY = matrix.d || 1;
+
+    const width = rect.width * scaleX;
+    const height = rect.height * scaleY;
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const left = ((centerX - width / 2) / window.innerWidth) * 100;
+    const right = ((centerX + width / 2) / window.innerWidth) * 100;
+    const top = ((centerY - height / 2) / window.innerHeight) * 100;
+    const bottom = ((centerY + height / 2) / window.innerHeight) * 100;
+
+    return `polygon(
+      ${left}% ${top}%,
+      ${right}% ${top}%,
+      ${right}% ${bottom}%,
+      ${left}% ${bottom}%
+    )`;
+  };
+
+  const handleMiniVideoClick = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+
+    const startClip = getMiniClipPath();
+
+    tlRef.current = gsap.timeline({
+      defaults: { ease: "power3.inOut" },
+      onComplete: () => {
+        setCurrentIndex(nextVideoIndex);
+        setIsAnimating(false);
       },
-      onLeave: () => {
-        // Immediately reset Hero to relative positioning
-        container.current.style.position = "relative";
-        container.current.style.top = "0";
-        container.current.style.left = "0";
-        container.current.style.transform = "none";
-      },
-      y: 250,
-      scale: 0.75,
-      rotation: -15,
-      ease: "power3.inOut",
     });
 
-    // About section scroll animation
-    gsap.fromTo(
-      aboutRef.current,
-      { x: -100, scale: 0.5, rotation: 15 },
-      {
-        x: 0,
-        scale: 1,
-        duration: 2,
-        rotation: 0,
+    tlRef.current
+      .set(nextVideoRef.current, {
+        visibility: "visible",
+        zIndex: 20,
+        clipPath: startClip,
+      })
+      .to(nextVideoRef.current, {
+        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        duration: 1.2,
         ease: "power3.inOut",
+      });
+  };
 
-        scrollTrigger: {
-          trigger: aboutRef.current,
-          start: "top 200%", // start when About enters viewport
-          end: "top 10%", // end when About reaches center
-          scrub: 1,
-        },
-      }
-    );
-  });
+  useEffect(() => {
+    if (!nextVideoRef.current) return;
+
+    gsap.set(nextVideoRef.current, {
+      visibility: "hidden",
+      zIndex: 5,
+      clipPath: "polygon(0 0, 0 0, 0 0, 0 0)",
+    });
+  }, [currentIndex]);
 
   return (
-    <>
-      <section
-        ref={container}
-        className="fixed top-0 z-10 left-0 sticky-section w-screen h-screen bg-purple-950 flex items-center justify-center overflow-hidden"
-      >
-        <div className="absolute inset-0 flex items-center justify-center slam-text">
-          <h1 className="text-[28vw] font-black text-white leading-none select-none pointer-events-none uppercase">
-            Smile
-          </h1>
-        </div>
-        <div className="floating-wrapper absolute inset-0 pointer-events-none">
-          <FloatingElements />
-        </div>
-        <div className="face-wrapper z-1">
-          <HeroFace />
-        </div>
-        <div className="cta-badge absolute bottom-12 right-12 z-2 group">
-          <div className="relative bg-[#A3FFD6] text-black font-black px-6 py-2 rounded-2xl transform group-hover:-rotate-2 group-hover:scale-110 transition-all duration-300 cursor-pointer shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-2 border-black">
-            EXPLORE
-            <div className="absolute -top-3 -left-3 bg-white border-2 border-black text-[10px] px-2 py-0.5 rounded-full">
-              scroll
-            </div>
-          </div>
-        </div>
-      </section>
+    <section className="relative h-screen w-screen overflow-hidden">
+      {/* NAV */}
+      <nav className="absolute top-4 left-1/2 z-50 w-[92%] -translate-x-1/2 rounded-full border border-white/15 bg-black/30 px-6 py-3 backdrop-blur-md md:w-[88%]">
+        <div className="flex items-center justify-between text-white font-heading">
+          <span className="text-lg font-black uppercase tracking-wider">
+            Velocity
+          </span>
 
-      <section
-        ref={aboutRef}
-        className="about absolute top-[100vh] z-20 w-full h-[150vh] flex justify-center items-center overflow-hidden bg-gray-600"
-      >
-        <div className="flex justify-center items-center P-6 mx-auto text-white text-4xl lg:text-7xl">
-          {" "}
-          SCROLL ANIMATIONS FINISHED CHECK OUT NEXT SECTION{" "}
+          <ul className="hidden items-center gap-8 text-sm font-semibold md:flex">
+            <li className="cursor-pointer opacity-80 transition hover:opacity-100">
+              Models
+            </li>
+            <li className="cursor-pointer opacity-80 transition hover:opacity-100">
+              Engineering
+            </li>
+            <li className="cursor-pointer opacity-80 transition hover:opacity-100">
+              Performance
+            </li>
+            <li className="cursor-pointer opacity-80 transition hover:opacity-100">
+              Contact
+            </li>
+          </ul>
+
+          <button className="rounded-full bg-white px-5 py-2 text-sm font-bold uppercase tracking-wide text-black transition hover:scale-105">
+            Drive
+          </button>
         </div>
-      </section>
-    </>
+      </nav>
+
+      {/* VIDEO STACK */}
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          ref={mainVideoRef}
+          src={videoSrc(currentIndex)}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 z-10 h-full w-full object-cover"
+        />
+
+        <video
+          ref={nextVideoRef}
+          src={videoSrc(nextVideoIndex)}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
+
+      {/* MINI PREVIEW */}
+      <div
+        ref={miniWrapperRef}
+        onClick={handleMiniVideoClick}
+        className="absolute top-[55%] left-1/2 z-50 size-64 -translate-x-1/2 -translate-y-1/2 cursor-pointer overflow-hidden rounded-2xl max-md:size-52"
+      >
+        <div
+          ref={miniInnerRef}
+          className="origin-center scale-50 opacity-0 transition-all duration-250 ease-in hover:scale-100 hover:opacity-100"
+        >
+          <video
+            src={videoSrc(nextVideoIndex)}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="size-full object-cover object-center"
+          />
+        </div>
+      </div>
+
+      {/* TOP CONTENT */}
+      <div className="absolute left-0 top-18 z-30 px-5 text-white md:px-10">
+        <h1 className="mt-2 text-5xl font-black uppercase font-heading md:text-[5vw]">
+          Velocity
+        </h1>
+        <p className="max-w-[25ch] text-xl font-medium md:text-2xl font-body lg:text-3xl">
+          Experience the thrill of engineering and speed
+        </p>
+      </div>
+
+      {/* BOTTOM CONTENT */}
+      <div className="absolute bottom-5 right-0 z-30 px-8 text-white font-heading md:px-10">
+        <h1 className="text-5xl font-black uppercase md:text-[5vw] max-md:text-4xl">
+          Precision
+        </h1>
+      </div>
+    </section>
   );
-}
+};
+
+export default Hero;
